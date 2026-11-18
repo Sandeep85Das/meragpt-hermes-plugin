@@ -1,0 +1,17 @@
+name: meragpt
+version: 0.1.0
+description: "meraGPT Decider for Hermes: typed decisions with calibrated probabilities (Decider), rewriting AI drafts so they read as human while keeping the facts (Restyler), and predicting the web searches an AI assistant runs for a question (Fanout), through the meraGPT API with your own key."
+author: "Okyasoft Pte Ltd"
+license: MIT
+homepage: https://meragpt.com
+requires_hermes: ">=0.21.5"
+provides_tools:
+  - meragpt_decide
+  - meragpt_restyle
+  - meragpt_fanout
+provides_hooks: []
+requires_env:
+  - name: MERAGPT_API_KEY
+    description: "meraGPT API key. Create one at https://meragpt.com/dashboard/keys (new accounts get $1 of free credit; after that usage is billed per token)."
+    url: "https://meragpt.com/dashboard/keys"
+    secret: true

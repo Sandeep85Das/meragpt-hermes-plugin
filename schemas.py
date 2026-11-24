@@ -90,4 +90,34 @@ FANOUT = {
     },
 }
 
-# TODO: add meragpt_extract (POST /v1/extract) when that endpoint is generally available.
+EXTRACT = {
+    "name": "meragpt_extract",
+    "description": (
+        "Pull the fields you define out of a document with meraGPT's Extractor: an email, a contract, a form, a "
+        "conversation, or a photo or scan of a receipt, invoice or page. Give it a JSON Schema for what you want and "
+        "it returns one JSON object that fits the schema, with typed values: numbers as numbers, dates as YYYY-MM-DD, "
+        "lists in document order. A field the document does not state comes back null instead of being guessed, so "
+        "treat null as 'not in the document'. Long documents are read in windows and merged. Send either text or "
+        "images (up to 6 pages of one document), not both. Paid per input token from the user's meraGPT credit; "
+        "output is free."
+    ),
+    "parameters": {
+        "type": "object",
+        "properties": {
+            "schema": {
+                "type": "object",
+                "description": "A JSON Schema object for the result, e.g. {\"type\": \"object\", \"properties\": "
+                               "{\"invoice_number\": {\"type\": \"string\"}, \"total\": {\"type\": \"number\"}, "
+                               "\"due_date\": {\"type\": \"string\", \"format\": \"date\"}, \"items\": {\"type\": \"array\", "
+                               "\"items\": {\"type\": \"object\", \"properties\": {\"description\": {\"type\": \"string\"}, "
+                               "\"amount\": {\"type\": \"number\"}}}}}}. Field descriptions are read, so say what each field means.",
+            },
+            "text": {"type": "string", "description": "The document as text. Leave out when sending images."},
+            "images": {"type": "array", "items": {"type": "string"},
+                       "description": "Pages of one document as https image URLs or base64 data URLs (up to 6). Leave out when sending text."},
+            "reference_date": {"type": "string", "description": "Optional. Today's date (YYYY-MM-DD), for relative dates such as 'last Tuesday'."},
+            "question": {"type": "string", "description": "Optional. A question that narrows what to extract."},
+        },
+        "required": ["schema"],
+    },
+}

@@ -140,6 +140,34 @@ class FanoutTests(unittest.TestCase):
         self.assertEqual(out["error"]["code"], "network_error")
 
 
+class ExtractTests(unittest.TestCase):
+    SCHEMA = {"type": "object", "properties": {"total": {"type": "number"}, "po": {"type": "string"}}}
+
+    def test_text_request_and_answer(self):
+        r = Recorder({"id": "req_x", "object": "extraction", "model": "extractor-1", "data": {"total": 328.2, "po": None},
+                      "windows": 1, "usage": {"prompt_tokens": 90, "completion_tokens": 12}, "balance_usd": "$0.99"})
+        out = json.loads(tools.extract({"schema": self.SCHEMA, "text": "Invoice total $328.20", "reference_date": "2026-11-24"}, **kw(r)))
+        self.assertEqual(r.request.full_url, "https://meragpt.com/v1/extract")
+        self.assertEqual(r.sent(), {"model": "extractor-1", "schema": self.SCHEMA, "text": "Invoice total $328.20",
+                                    "reference_date": "2026-11-24"})
+        self.assertEqual(out["data"], {"total": 328.2, "po": None})
+        self.assertNotIn("id", out)
+
+    def test_images(self):
+        r = Recorder({"model": "extractor-1", "data": {"total": 12.5, "po": None}})
+        tools.extract({"schema": self.SCHEMA, "images": ["https://example.com/receipt.jpg"]}, **kw(r))
+        self.assertEqual(r.sent()["images"], ["https://example.com/receipt.jpg"])
+        self.assertNotIn("text", r.sent())
+
+    def test_validation(self):
+        r = Recorder({})
+        self.assertIn("schema is required", tools.extract({"text": "x"}, **kw(r)))
+        self.assertIn("text or images is required", tools.extract({"schema": self.SCHEMA}, **kw(r)))
+        self.assertIn("not both", tools.extract({"schema": self.SCHEMA, "text": "x", "images": ["https://a/b.png"]}, **kw(r)))
+        self.assertIn("at most 6", tools.extract({"schema": self.SCHEMA, "images": ["https://a/b.png"] * 7}, **kw(r)))
+        self.assertIsNone(r.request, "invalid input must not call the API")
+
+
 class RegisterTests(unittest.TestCase):
     def test_registers_declared_tools_and_skill(self):
         calls, skills = [], []
@@ -155,7 +183,7 @@ class RegisterTests(unittest.TestCase):
         manifest = (ROOT / "plugin.yaml").read_text()
         for name in calls:
             self.assertIn(f"- {name}", manifest)
-        self.assertEqual(sorted(calls), ["meragpt_decide", "meragpt_fanout", "meragpt_restyle"])
+        self.assertEqual(sorted(calls), ["meragpt_decide", "meragpt_extract", "meragpt_fanout", "meragpt_restyle"])
         self.assertEqual(skills, ["meragpt-decisions"])
 
 

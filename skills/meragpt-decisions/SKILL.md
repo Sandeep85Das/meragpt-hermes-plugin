@@ -1,6 +1,6 @@
 ---
 name: meragpt-decisions
-description: Use meraGPT's Decider for cheap typed decisions inside a task (routing, triage, yes/no checks, scoring, guardrails, picking a tool), Restyler to make AI-written drafts read as human, and Fanout to predict the searches an AI assistant runs for a question.
+description: Use meraGPT's Decider for cheap typed decisions inside a task (routing, triage, yes/no checks, scoring, guardrails, picking a tool), Extractor to pull typed fields out of documents and photos, Restyler to make AI-written drafts read as human, and Fanout to predict the searches an AI assistant runs for a question.
 ---
 
 Use these tools when a step in the task is a small, well-defined judgement or rewrite that does not need the main model's full reasoning.
@@ -22,6 +22,10 @@ Use these tools when a step in the task is a small, well-defined judgement or re
 4. If the state might not contain the answer, offer `"unknown": "The state does not say"` as a choice label, so the answer can be "I don't know" instead of a confident guess.
 5. Ask several questions about the same state in one call; each is answered independently.
 6. Decide in advance how sure you need to be. Act when the probability clears that bar; otherwise ask the user or take the cautious path.
+
+## Extractor
+
+Use `meragpt_extract` when you need specific fields out of a document, an email, a contract, a conversation or a photo of a receipt or invoice. Write a JSON Schema with a short description per field. Treat `null` as "the document does not say", not as an error, and do not fill it in yourself. Send text or images (up to 6 pages), not both.
 
 ## Restyler
 
